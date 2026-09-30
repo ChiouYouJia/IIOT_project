@@ -1,8 +1,6 @@
-# Data files (too large for git)
+# Large binary data files
 data/raw/*.pcap
-data/raw/*.csv
 data/raw/*.zip
-data/processed/*.csv
 data/processed/*.npy
 data/processed/*.pkl
 
