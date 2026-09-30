@@ -29,6 +29,7 @@
 2. **時序異常偵測**: 論文明確指出 sequence anomaly detection 是未來方向
 3. **多模態融合**: 結合 network flow + process state variables 進行異常偵測
 4. **無監督 / 半監督**: 探索不需要標記資料的偵測方法
+5. **聯邦式學習**: 模擬分散式 ICS 場域，在保護資料隱私的前提下協同訓練異常偵測模型
 
 ## 研究方法
 
@@ -46,6 +47,13 @@
 
 ### 方法四：LSTM / Temporal CNN + Attention
 - 將流量資料轉為時間序列，利用序列模型捕捉攻擊前後的行為變化
+
+### 方法五：Federated Learning (聯邦式學習)
+- 模擬多個 ICS 場域 (工廠/子站) 各自訓練本地模型，透過聯邦學習聚合全域模型
+- 解決 ICS 資料隱私與不可共享的核心問題 — 論文指出「some datasets are highly anonymized and cannot be shared due to confidentiality concerns」
+- 探索 Non-IID 資料分佈下的異常偵測效能 (不同場域面臨不同攻擊類型)
+- 比較 FedAvg, FedProx, FedBN 等聯邦策略
+- 結合差分隱私 (Differential Privacy) 進一步保護敏感工控資料
 
 ### 擴展方向：多模態融合 (Network + Process Variables)
 - 同時分析網路流量與物理過程變數 (水位、閥門狀態等)
@@ -69,7 +77,8 @@ IIOT_project/
 │   ├── 04_gnn.ipynb             # GNN-based detection
 │   ├── 05_contrastive.ipynb     # Contrastive Learning
 │   ├── 06_temporal.ipynb        # LSTM / TCN + Attention
-│   └── 07_multimodal.ipynb      # 多模態融合
+│   ├── 07_multimodal.ipynb      # 多模態融合
+│   └── 08_federated.ipynb       # 聯邦式學習
 ├── src/
 │   ├── data/
 │   │   ├── __init__.py
@@ -81,7 +90,8 @@ IIOT_project/
 │   │   ├── anomaly_transformer.py
 │   │   ├── gnn_detector.py
 │   │   ├── contrastive.py
-│   │   └── temporal.py
+│   │   ├── temporal.py
+│   │   └── federated.py         # 聯邦式學習
 │   ├── utils/
 │   │   ├── __init__.py
 │   │   ├── metrics.py           # 評估指標
@@ -134,6 +144,7 @@ python src/train.py --config configs/default.yaml --model transformer
 - ROC-AUC, PR-AUC
 - Detection Latency (偵測延遲)
 - False Positive Rate (誤報率) — 在 ICS 環境中特別重要
+- Communication Cost (通訊成本) — 聯邦學習專用指標
 
 ## 參考文獻
 
@@ -141,6 +152,10 @@ python src/train.py --config configs/default.yaml --model transformer
 - Deng, A. & Hooi, B. (2021). *Graph Neural Network-Based Anomaly Detection in Multivariate Time Series.* AAAI 2021.
 - Shenkar, T. & Wolf, L. (2022). *Anomaly Detection for Tabular Data with Internal Contrastive Learning.* ICLR 2022.
 - Lai, K. et al. (2024). *Nominality Score Conditioned Time Series Anomaly Detection by Point/Sequential Reconstruction.* NeurIPS 2024.
+- McMahan, B. et al. (2017). *Communication-Efficient Learning of Deep Networks from Decentralized Data.* AISTATS 2017.
+- Li, T. et al. (2020). *Federated Optimization in Heterogeneous Networks (FedProx).* MLSys 2020.
+- Nguyen, T. D. et al. (2019). *DIoT: A Federated Self-learning Anomaly Detection System for IoT.* IEEE ICDCS 2019.
+- Mothukuri, V. et al. (2021). *A Survey on Security and Privacy of Federated Learning.* Future Generation Computer Systems.
 
 ## License
 

@@ -29,3 +29,5 @@ dependencies:
       - einops
       - wandb
       - tensorboard
+      - flwr>=1.5
+      - opacus>=1.4

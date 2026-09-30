@@ -1,6 +1,6 @@
 # 研究計畫：ICS 異常偵測 — 基於 ICS-Flow 資料集的深度學習方法
 
-**時程**: 7-8 週
+**時程**: 8 週
 **目標**: 使用現代深度學習方法改進 ICS 網路流量異常偵測，超越論文基線 (RF: F1=0.995 detection, F1=0.52~0.98 identification)
 
 ---
@@ -12,7 +12,7 @@
 - 建立可復現的實驗環境
 
 ### 任務
-- [ ] 環境建置 (Python, PyTorch, DGL/PyG, scikit-learn)
+- [ ] 環境建置 (Python, PyTorch, DGL/PyG, Flower/FedML, scikit-learn)
 - [ ] 下載 ICS-Flow 資料集 (Kaggle)
 - [ ] 探索性資料分析 (EDA)
   - 各攻擊類型的分佈統計
@@ -89,15 +89,13 @@
 
 ---
 
-## 第 4 週：Graph Neural Network
+## 第 4 週：Graph Neural Network + Contrastive Learning / LSTM
 
 ### 目標
 - 將 ICS 網路通訊建模為動態圖，利用 GNN 捕捉結構異常
+- 實作對比學習與序列模型
 
-### 背景
-ICS 的通訊模式具有明確的拓撲結構 (PLC-1, PLC-2, HMI-1/2/3, Attacker)。GNN 可以學習正常的通訊模式圖結構，攻擊會改變圖的拓撲或邊的特徵。
-
-### 任務
+### 任務 A：Graph Neural Network
 - [ ] 圖結構建模
   - 節點 = ICS 元件 (依 IP/MAC 地址)
   - 邊 = 時間窗口內的通訊流量
@@ -108,44 +106,83 @@ ICS 的通訊模式具有明確的拓撲結構 (PLC-1, PLC-2, HMI-1/2/3, Attacke
   - Graph Attention Network (GAT) 用於學習注意力權重
   - 基於預測誤差的異常偵測
 - [ ] 動態圖建構 (不同時間窗口的圖序列)
-- [ ] 實驗與分析
-  - GNN 是否能改善 IP-Scan 偵測?
-  - 圖結構在攻擊期間如何變化?
 
-### 交付物
-- `notebooks/04_gnn.ipynb`
-- `src/models/gnn_detector.py`
-- 圖結構視覺化
-
----
-
-## 第 5 週：Contrastive Learning + LSTM/TCN
-
-### 目標
-- 使用對比學習建構正常行為的表示空間
-- 實作 LSTM/TCN 序列模型
-
-### 任務 A：Contrastive Learning
+### 任務 B：Contrastive Learning + LSTM/TCN
 - [ ] 實作 self-supervised contrastive framework
   - 資料增強策略 (jittering, scaling, permutation)
   - Contrastive loss (NT-Xent / SupCon)
-  - 特徵提取 + 異常分數計算 (距離 normal cluster 的距離)
-- [ ] 無監督 + 半監督設定的比較
-
-### 任務 B：LSTM / TCN + Attention
-- [ ] LSTM-based 序列異常偵測
+- [ ] LSTM / TCN + Attention 序列模型
   - 使用滑動窗口產生序列樣本
-  - Attention 機制聚焦關鍵時間步
-- [ ] Temporal Convolutional Network (TCN)
   - 因果卷積 + 膨脹卷積
-  - 適合捕捉不同時間尺度的模式
-- [ ] 與 Transformer 方法比較序列建模能力
 
 ### 交付物
-- `notebooks/05_contrastive.ipynb`
-- `notebooks/06_temporal.ipynb`
-- `src/models/contrastive.py`
-- `src/models/temporal.py`
+- `notebooks/04_gnn.ipynb`
+- `notebooks/05_contrastive.ipynb` + `notebooks/06_temporal.ipynb`
+- `src/models/gnn_detector.py`, `contrastive.py`, `temporal.py`
+
+---
+
+## 第 5 週：Federated Learning (聯邦式學習)
+
+### 目標
+- 模擬分散式 ICS 場域，在不共享原始資料的前提下協同訓練異常偵測模型
+- 探索聯邦學習在 ICS 安全領域的適用性與挑戰
+
+### 背景
+論文指出 ICS 資料集面臨的核心挑戰之一是「some datasets are highly anonymized and cannot be shared due to confidentiality concerns」。在真實世界中，不同工廠/子站的 ICS 資料因商業機密和安全法規無法集中訓練。Federated Learning 允許各場域在本地訓練模型，只共享模型參數，是解決 ICS 資料孤島問題的關鍵技術。
+
+### 任務
+
+#### A. 資料分割 — 模擬多場域
+- [ ] 將 ICS-Flow 資料集切分為 N 個 client (模擬 N 個工廠/子站)
+  - **IID 分割**: 各 client 均勻分配所有攻擊類型
+  - **Non-IID 分割 (攻擊異質性)**: 不同 client 面臨不同攻擊
+    - Client 1: 主要遭受 DDoS
+    - Client 2: 主要遭受 MitM + Replay
+    - Client 3: 主要遭受 Reconnaissance
+    - Client 4: 全部為正常流量 (模擬未曾被攻擊的場域)
+  - **Non-IID 分割 (數量異質性)**: 各 client 資料量不同 (模擬大工廠 vs 小型子站)
+  - **Non-IID 分割 (時間異質性)**: 各 client 有不同時間段的資料
+
+#### B. 聯邦學習框架實作
+- [ ] 使用 **Flower (flwr)** 框架實作聯邦訓練
+- [ ] 實作多種聯邦聚合策略
+  - **FedAvg**: 基礎加權平均聚合 (McMahan et al., 2017)
+  - **FedProx**: 加入 proximal term 處理 Non-IID 問題 (Li et al., 2020)
+  - **FedBN**: 保留各 client 的 Batch Normalization 層處理 feature shift
+  - **FedNova**: 正規化各 client 的本地更新步數差異
+- [ ] 本地模型選擇
+  - 將第 2-4 週最佳的模型 (e.g., Transformer, LSTM) 作為各 client 的本地模型
+  - 比較不同本地模型架構下的聯邦效果
+
+#### C. 差分隱私 (Differential Privacy)
+- [ ] 在聯邦學習中加入 DP-SGD
+  - 梯度裁剪 (gradient clipping) + 高斯噪聲 (Gaussian noise)
+  - 探索隱私預算 ε 與模型效能的 trade-off
+- [ ] 比較有無 DP 的偵測效能差異
+
+#### D. 進階聯邦異常偵測場景
+- [ ] **新攻擊泛化**: 某些 client 從未見過的攻擊類型，能否透過聯邦模型偵測？
+- [ ] **惡意 client 防禦 (Byzantine-robust aggregation)**:
+  - 模擬被攻陷的 client 發送惡意模型更新
+  - 實作 Krum / Trimmed Mean 等拜占庭容錯聚合方法
+- [ ] **個人化聯邦學習 (Personalized FL)**:
+  - 全域模型 + 本地微調 (fine-tuning)
+  - 各場域可以適應自己的流量特徵
+
+#### E. 評估指標
+- [ ] 與集中式訓練的效能比較 (centralized vs federated)
+- [ ] 各 client 本地效能 vs 聯邦後的效能提升
+- [ ] 通訊成本 (communication rounds, 傳輸資料量)
+- [ ] 收斂速度 (多少輪聚合達到目標效能)
+- [ ] 隱私-效能 trade-off 曲線
+
+### 交付物
+- `notebooks/08_federated.ipynb`
+- `src/models/federated.py` — 聯邦訓練框架
+- Non-IID 分割策略視覺化
+- 聯邦 vs 集中式效能比較圖表
+- 隱私預算 vs F1-Score 分析
 
 ---
 
@@ -172,6 +209,7 @@ ICS 的通訊模式具有明確的拓撲結構 (PLC-1, PLC-2, HMI-1/2/3, Attacke
   - 融合策略比較 (early fusion, late fusion, cross-attention)
 - [ ] 分析融合是否改善偵測效果
   - 特別關注 MitM (false data injection) 是否更容易偵測
+- [ ] (選配) 多模態 + 聯邦學習：各場域擁有不同模態的資料
 
 ### 交付物
 - `notebooks/07_multimodal.ipynb`
@@ -183,7 +221,7 @@ ICS 的通訊模式具有明確的拓撲結構 (PLC-1, PLC-2, HMI-1/2/3, Attacke
 ## 第 7 週：綜合比較與消融實驗
 
 ### 目標
-- 系統性比較所有方法
+- 系統性比較所有方法 (含聯邦學習)
 - 消融實驗驗證各元件的貢獻
 
 ### 任務
@@ -195,14 +233,17 @@ ICS 的通訊模式具有明確的拓撲結構 (PLC-1, PLC-2, HMI-1/2/3, Attacke
   - 特徵子集的影響 (flow / general / TCP)
   - 時間窗口大小的影響
   - 模型元件消融 (e.g., attention 機制, 圖結構)
+  - 聯邦學習消融：IID vs Non-IID, 有無 DP, 聚合策略
 - [ ] 計算效率分析
   - 訓練時間 / 推論時間
   - 模型參數量
+  - 通訊開銷 (聯邦學習)
   - 適用於即時偵測的可行性
 - [ ] 錯誤分析
   - 各方法的 confusion matrix 比較
   - 不同攻擊類型的最佳偵測方法
   - False positive 分析
+  - 聯邦學習在不同 Non-IID 程度下的效能退化分析
 
 ### 交付物
 - 完整的比較結果表格
@@ -220,8 +261,8 @@ ICS 的通訊模式具有明確的拓撲結構 (PLC-1, PLC-2, HMI-1/2/3, Attacke
 ### 任務
 - [ ] 撰寫研究報告
   - Introduction & Motivation
-  - Related Work (近 2 年的 ICS 異常偵測方法)
-  - Methodology (各方法的詳細描述)
+  - Related Work (近 2 年的 ICS 異常偵測 + 聯邦學習方法)
+  - Methodology (各方法的詳細描述，含聯邦學習架構)
   - Experiments & Results
   - Discussion & Analysis
   - Conclusion & Future Work
@@ -249,6 +290,7 @@ ICS 的通訊模式具有明確的拓撲結構 (PLC-1, PLC-2, HMI-1/2/3, Attacke
 | GNN | 半監督 / 結構 | 改善 IP-Scan 偵測 (利用圖拓撲變化) |
 | Contrastive Learning | 無監督 | 不需標記資料，泛化能力更強 |
 | LSTM/TCN + Attention | 監督 / 序列 | 改善 Replay vs MitM 區分 |
+| Federated Learning | 分散式 / 隱私保護 | 不共享原始資料即可協同偵測，解決資料孤島 |
 | 多模態融合 | 監督 | 結合物理過程資訊，全面提升偵測效果 |
 
 ## 風險與備案
@@ -257,6 +299,8 @@ ICS 的通訊模式具有明確的拓撲結構 (PLC-1, PLC-2, HMI-1/2/3, Attacke
    - 備案：使用資料增強、遷移學習、或結合其他 ICS 資料集 (SWaT, WUSTL-IIoT)
 2. **GPU 資源**: Transformer / GNN 需要 GPU
    - 備案：使用 Google Colab Pro 或縮小模型規模
-3. **時間壓力**: 8 週時間緊湊
-   - 優先級：Transformer > LSTM/TCN > GNN > Contrastive > 多模態
-   - 如果時間不夠，可以只做 Transformer + 一個其他方法的比較
+3. **Non-IID 分割後資料更少**: 聯邦學習分割後每個 client 資料量有限
+   - 備案：增加通訊輪數、使用 knowledge distillation、或採用 few-shot 方法
+4. **時間壓力**: 8 週時間緊湊
+   - 優先級：Transformer > Federated Learning > LSTM/TCN > GNN > Contrastive > 多模態
+   - 如果時間不夠，可以聚焦 Transformer + Federated Learning 作為核心貢獻

@@ -45,3 +45,21 @@ multimodal:
   process_encoder: lstm
   fusion: cross_attention  # early | late | cross_attention
   hidden_dim: 64
+
+federated:
+  num_clients: 4
+  partition: non_iid_attack  # iid | non_iid_attack | non_iid_quantity | non_iid_time
+  rounds: 50
+  local_epochs: 5
+  local_model: lstm          # lstm | transformer | mlp
+  strategy: fedavg           # fedavg | fedprox | fedbn | fednova
+  fedprox_mu: 0.01
+  dp:
+    enabled: false
+    epsilon: 8.0
+    delta: 1e-5
+    max_grad_norm: 1.0
+  byzantine:
+    enabled: false
+    num_malicious: 1
+    defense: krum             # krum | trimmed_mean | none
