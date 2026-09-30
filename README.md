@@ -25,46 +25,32 @@
 
 ## 研究目標
 
-1. **超越基線**: 論文使用 DT / RF / ANN，最佳 F1-score 在攻擊辨識上仍不理想 (IP-Scan F1=0.52)
-2. **時序異常偵測**: 論文明確指出 sequence anomaly detection 是未來方向
-3. **多模態融合**: 結合 network flow + process state variables 進行異常偵測
-4. **無監督 / 半監督**: 探索不需要標記資料的偵測方法
-5. **聯邦式學習**: 模擬分散式 ICS 場域，在保護資料隱私的前提下協同訓練異常偵測模型
+1. **超越基線**: 論文使用 DT / RF / ANN，IP-Scan F1 僅 0.52，有明確改進空間
+2. **時序異常偵測**: 論文指出 sequence anomaly detection 是未來方向
+3. **聯邦式學習**: 模擬分散式 ICS 場域，在保護資料隱私的前提下協同訓練
 
 ## 研究方法
 
-### 方法一：Transformer-based Anomaly Detection
-- **Anomaly Transformer** (ICLR 2022) — 利用 Association Discrepancy 進行無監督異常偵測
-- 適用於 ICS 流量的時序異常偵測
+### 方法一：LSTM + Attention（成員 A）
+- 將流量資料轉為時間序列，利用 LSTM 捕捉攻擊前後的行為變化
+- 加入 Attention 機制聚焦關鍵時間步
+- 論文明確指出「analyzing the predecessor and successor is a promising technique」
 
-### 方法二：Graph Neural Network (GNN)
+### 方法二：Federated Learning 聯邦式學習（成員 B）
+- 模擬多個 ICS 場域各自訓練本地模型，透過聯邦學習聚合全域模型
+- 探索 Non-IID 資料分佈下的異常偵測效能
+- 比較 FedAvg / FedProx 聯邦策略
+
+### 方法三：Graph Neural Network（成員 C）
 - 將網路流量建模為圖結構 (節點=ICS 元件, 邊=通訊流量)
-- 使用 GNN 捕捉 ICS 元件間的通訊模式異常
-
-### 方法三：Contrastive Learning
-- 使用對比學習建構 normal behavior representation
-- 偏離正常表示的流量即為異常
-
-### 方法四：LSTM / Temporal CNN + Attention
-- 將流量資料轉為時間序列，利用序列模型捕捉攻擊前後的行為變化
-
-### 方法五：Federated Learning (聯邦式學習)
-- 模擬多個 ICS 場域 (工廠/子站) 各自訓練本地模型，透過聯邦學習聚合全域模型
-- 解決 ICS 資料隱私與不可共享的核心問題 — 論文指出「some datasets are highly anonymized and cannot be shared due to confidentiality concerns」
-- 探索 Non-IID 資料分佈下的異常偵測效能 (不同場域面臨不同攻擊類型)
-- 比較 FedAvg, FedProx, FedBN 等聯邦策略
-- 結合差分隱私 (Differential Privacy) 進一步保護敏感工控資料
-
-### 擴展方向：多模態融合 (Network + Process Variables)
-- 同時分析網路流量與物理過程變數 (水位、閥門狀態等)
-- 使用 Cross-Attention 機制融合兩種模態的資訊
+- 使用 GAT 捕捉 ICS 元件間的通訊模式異常
 
 ## 專案結構
 
 ```
 IIOT_project/
 ├── README.md                    # 本文件
-├── RESEARCH_PLAN.md             # 詳細研究計畫 (7-8 週)
+├── RESEARCH_PLAN.md             # 詳細研究計畫 (8 週)
 ├── setup/
 │   └── environment.yml          # Conda 環境設定
 ├── data/
@@ -73,12 +59,9 @@ IIOT_project/
 ├── notebooks/
 │   ├── 01_eda.ipynb             # 探索性資料分析
 │   ├── 02_baseline.ipynb        # 基線模型複現
-│   ├── 03_transformer.ipynb     # Anomaly Transformer
+│   ├── 03_lstm.ipynb            # LSTM + Attention
 │   ├── 04_gnn.ipynb             # GNN-based detection
-│   ├── 05_contrastive.ipynb     # Contrastive Learning
-│   ├── 06_temporal.ipynb        # LSTM / TCN + Attention
-│   ├── 07_multimodal.ipynb      # 多模態融合
-│   └── 08_federated.ipynb       # 聯邦式學習
+│   └── 05_federated.ipynb       # 聯邦式學習
 ├── src/
 │   ├── data/
 │   │   ├── __init__.py
@@ -87,10 +70,8 @@ IIOT_project/
 │   ├── models/
 │   │   ├── __init__.py
 │   │   ├── baseline.py          # DT / RF / ANN 基線
-│   │   ├── anomaly_transformer.py
-│   │   ├── gnn_detector.py
-│   │   ├── contrastive.py
-│   │   ├── temporal.py
+│   │   ├── lstm_attention.py    # LSTM + Attention
+│   │   ├── gnn_detector.py      # GNN
 │   │   └── federated.py         # 聯邦式學習
 │   ├── utils/
 │   │   ├── __init__.py
@@ -135,16 +116,14 @@ kaggle datasets download -d alirezadehlaghi/icssim -p data/raw --unzip
 jupyter notebook notebooks/01_eda.ipynb
 
 # 訓練模型
-python src/train.py --config configs/default.yaml --model transformer
+python src/train.py --config configs/default.yaml --model lstm
 ```
 
 ## 評估指標
 
 - Accuracy, Precision, Recall, F1-Score
-- ROC-AUC, PR-AUC
-- Detection Latency (偵測延遲)
-- False Positive Rate (誤報率) — 在 ICS 環境中特別重要
-- Communication Cost (通訊成本) — 聯邦學習專用指標
+- Confusion Matrix
+- ROC-AUC
 
 ## 相關文獻 (使用 ICS-Flow / ICSSIM 的近期研究)
 
@@ -153,21 +132,16 @@ python src/train.py --config configs/default.yaml --model transformer
 | Dehlaghi-Ghadim et al., *Federated Learning for Network Anomaly Detection in a Distributed Industrial Environment* (ICMLA 2023) | 2023 | Federated Learning | 聯邦模型超越本地模型，匹配/超過集中式模型 |
 | Al-Naimi & Belhi, *Deep Learning-Based Anomaly Detection in ICS Network Traffic* (ICTIS 2024, Springer) | 2024 | CNN (traffic-to-image) | 將 ICSSIM 網路流量轉換為視覺域，用 CNN 分類 |
 | Dehlaghi-Ghadim et al., *Domain Knowledge-Infused Synthetic Data Generation for LLM-Based IDS* (Electronics 2025) | 2025 | LLM-based IDS | 用 ICSSIM 建構 6 種 MITRE ATT&CK 場景，以 LLM 做入侵偵測 |
-| Omar, *Binary Image-Based Intrusion Detection for OT Networks* (SPIE 2025) | 2025 | SPHBI + CNN | Modbus TCP 封包影像化，加入應用層資訊後 accuracy 達 98.1%；Replay 攻擊對 single-packet 方法結構性不可偵測 |
+| Omar, *Binary Image-Based Intrusion Detection for OT Networks* (SPIE 2025) | 2025 | SPHBI + CNN | Modbus TCP 封包影像化，加入應用層資訊後 accuracy 達 98.1% |
 | *Physics-Guided Contrastive Temporal Graph Learning* (Nature Sci. Reports 2026) | 2026 | GNN + Contrastive | 結合物理約束的時序圖對比學習，引用 ICS-Flow |
-
-> **觀察**: 原始論文目前約 48 次引用 (Google Scholar)。Anomaly Transformer 在 ICS-Flow 上尚無直接研究，為本計畫提供明確的貢獻空間。
 
 ## 參考文獻
 
-- Xu, J. et al. (2022). *Anomaly Transformer: Time Series Anomaly Detection with Association Discrepancy.* ICLR 2022.
+- Hochreiter, S. & Schmidhuber, J. (1997). *Long Short-Term Memory.* Neural Computation.
 - Deng, A. & Hooi, B. (2021). *Graph Neural Network-Based Anomaly Detection in Multivariate Time Series.* AAAI 2021.
-- Shenkar, T. & Wolf, L. (2022). *Anomaly Detection for Tabular Data with Internal Contrastive Learning.* ICLR 2022.
-- Lai, K. et al. (2024). *Nominality Score Conditioned Time Series Anomaly Detection by Point/Sequential Reconstruction.* NeurIPS 2024.
 - McMahan, B. et al. (2017). *Communication-Efficient Learning of Deep Networks from Decentralized Data.* AISTATS 2017.
 - Li, T. et al. (2020). *Federated Optimization in Heterogeneous Networks (FedProx).* MLSys 2020.
 - Nguyen, T. D. et al. (2019). *DIoT: A Federated Self-learning Anomaly Detection System for IoT.* IEEE ICDCS 2019.
-- Mothukuri, V. et al. (2021). *A Survey on Security and Privacy of Federated Learning.* Future Generation Computer Systems.
 
 ## License
 
