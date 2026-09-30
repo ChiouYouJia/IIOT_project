@@ -1,0 +1,47 @@
+data:
+  label_strategy: NST
+  task: detection         # detection | identification
+  test_size: 0.3
+  val_size: 0.2
+  window_size: 20         # for sequence models
+  stride: 1
+
+training:
+  batch_size: 256
+  epochs: 100
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  early_stopping_patience: 10
+  device: auto            # auto | cuda | cpu
+
+transformer:
+  d_model: 64
+  n_heads: 4
+  n_layers: 3
+  d_ff: 128
+  dropout: 0.1
+  anomaly_ratio: 0.1
+
+gnn:
+  hidden_dim: 64
+  n_layers: 3
+  heads: 4
+  dropout: 0.2
+  time_window: 10         # seconds
+
+temporal:
+  model_type: lstm        # lstm | tcn
+  hidden_dim: 128
+  n_layers: 2
+  dropout: 0.2
+
+contrastive:
+  embedding_dim: 64
+  temperature: 0.1
+  augmentation: ["jitter", "scale"]
+
+multimodal:
+  network_encoder: transformer
+  process_encoder: lstm
+  fusion: cross_attention  # early | late | cross_attention
+  hidden_dim: 64
