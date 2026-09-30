@@ -1,7 +1,81 @@
 # 研究計畫：ICS 異常偵測 — 基於 ICS-Flow 資料集的深度學習方法
 
 **時程**: 8 週
+**成員**: 3 人
 **目標**: 使用現代深度學習方法改進 ICS 網路流量異常偵測，超越論文基線 (RF: F1=0.995 detection, F1=0.52~0.98 identification)
+
+---
+
+## 成員分工
+
+### 總覽
+
+| 成員 | 負責方法 | 核心任務 |
+|------|---------|---------|
+| **成員 A** | Anomaly Transformer + 多模態融合 | 時序異常偵測 + 網路/物理過程融合 |
+| **成員 B** | Federated Learning + Contrastive Learning | 聯邦式學習框架 + 對比學習 |
+| **成員 C** | GNN + LSTM/TCN | 圖結構偵測 + 序列模型 |
+
+### 共同任務 (全員)
+- **第 1 週**: 一起完成 EDA、資料前處理 pipeline、環境建置
+- **第 2 週**: 一起複現基線模型 (DT/RF/ANN) 並建立統一評估框架
+- **第 7 週**: 各自整理實驗結果，共同進行綜合比較
+- **第 8 週**: 共同撰寫報告，各自撰寫負責方法的章節
+
+### 成員 A：Transformer + 多模態融合
+
+| 週次 | 任務 |
+|------|------|
+| 第 3 週 | 實作 Anomaly Transformer，時序異常偵測實驗 |
+| 第 4 週 | 調參 + 不同時間窗口實驗 |
+| 第 5 週 | Process state variables 分析，設計多模態融合架構 |
+| 第 6 週 | 實作 Cross-Attention 融合，比較 early/late/cross-attention |
+| 第 7 週 | 消融實驗 + 整理結果 |
+| 第 8 週 | 撰寫 Transformer + 多模態章節 |
+
+**交付物**: `anomaly_transformer.py`, `multimodal.py`, `03_transformer.ipynb`, `07_multimodal.ipynb`
+
+### 成員 B：Federated Learning + Contrastive Learning
+
+| 週次 | 任務 |
+|------|------|
+| 第 3 週 | 設計 Non-IID 資料分割策略，搭建 Flower 框架 |
+| 第 4 週 | 實作 FedAvg/FedProx/FedBN，IID vs Non-IID 實驗 |
+| 第 5 週 | 加入差分隱私 (DP-SGD)，隱私-效能 trade-off 分析 |
+| 第 6 週 | 進階場景 (惡意 client 防禦, 個人化 FL) + Contrastive Learning 實作 |
+| 第 7 週 | 聯邦 vs 集中式比較 + 消融實驗 |
+| 第 8 週 | 撰寫 Federated Learning + Contrastive Learning 章節 |
+
+**交付物**: `federated.py`, `contrastive.py`, `08_federated.ipynb`, `05_contrastive.ipynb`
+
+### 成員 C：GNN + LSTM/TCN
+
+| 週次 | 任務 |
+|------|------|
+| 第 3 週 | 圖結構建模 (節點/邊定義)，實作 GAT/GDN |
+| 第 4 週 | 動態圖建構 + GNN 異常偵測實驗 |
+| 第 5 週 | 實作 LSTM + Attention，滑動窗口序列模型 |
+| 第 6 週 | 實作 TCN (因果卷積 + 膨脹卷積)，與 Transformer 比較 |
+| 第 7 週 | 消融實驗 + 圖結構視覺化 |
+| 第 8 週 | 撰寫 GNN + LSTM/TCN 章節 |
+
+**交付物**: `gnn_detector.py`, `temporal.py`, `04_gnn.ipynb`, `06_temporal.ipynb`
+
+### 協作時程圖
+
+```
+        Week 1    Week 2    Week 3    Week 4    Week 5    Week 6    Week 7    Week 8
+       ┌─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
+全  員  │  EDA    │ 基線複現 │         │         │         │         │綜合比較 │論文撰寫 │
+       ├─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
+成員 A │         │         │Transformer│ 調參   │Process分析│多模態融合│消融實驗 │  撰寫   │
+       ├─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
+成員 B │         │         │FL 框架  │FL 策略  │ DP 隱私 │Byzantine│消融實驗 │  撰寫   │
+       │         │         │         │         │         │+Contrast│         │         │
+       ├─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
+成員 C │         │         │GNN 建模 │GNN 實驗 │LSTM+Attn│  TCN    │消融實驗 │  撰寫   │
+       └─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+```
 
 ---
 
