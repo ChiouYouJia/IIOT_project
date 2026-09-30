@@ -146,6 +146,18 @@ python src/train.py --config configs/default.yaml --model transformer
 - False Positive Rate (誤報率) — 在 ICS 環境中特別重要
 - Communication Cost (通訊成本) — 聯邦學習專用指標
 
+## 相關文獻 (使用 ICS-Flow / ICSSIM 的近期研究)
+
+| 論文 | 年份 | 方法 | 關鍵發現 |
+|------|------|------|---------|
+| Dehlaghi-Ghadim et al., *Federated Learning for Network Anomaly Detection in a Distributed Industrial Environment* (ICMLA 2023) | 2023 | Federated Learning | 聯邦模型超越本地模型，匹配/超過集中式模型 |
+| Al-Naimi & Belhi, *Deep Learning-Based Anomaly Detection in ICS Network Traffic* (ICTIS 2024, Springer) | 2024 | CNN (traffic-to-image) | 將 ICSSIM 網路流量轉換為視覺域，用 CNN 分類 |
+| Dehlaghi-Ghadim et al., *Domain Knowledge-Infused Synthetic Data Generation for LLM-Based IDS* (Electronics 2025) | 2025 | LLM-based IDS | 用 ICSSIM 建構 6 種 MITRE ATT&CK 場景，以 LLM 做入侵偵測 |
+| Omar, *Binary Image-Based Intrusion Detection for OT Networks* (SPIE 2025) | 2025 | SPHBI + CNN | Modbus TCP 封包影像化，加入應用層資訊後 accuracy 達 98.1%；Replay 攻擊對 single-packet 方法結構性不可偵測 |
+| *Physics-Guided Contrastive Temporal Graph Learning* (Nature Sci. Reports 2026) | 2026 | GNN + Contrastive | 結合物理約束的時序圖對比學習，引用 ICS-Flow |
+
+> **觀察**: 原始論文目前約 48 次引用 (Google Scholar)。Anomaly Transformer 在 ICS-Flow 上尚無直接研究，為本計畫提供明確的貢獻空間。
+
 ## 參考文獻
 
 - Xu, J. et al. (2022). *Anomaly Transformer: Time Series Anomaly Detection with Association Discrepancy.* ICLR 2022.

@@ -356,6 +356,29 @@
 
 ---
 
+## 相關文獻
+
+以下論文直接使用 ICS-Flow / ICSSIM 資料集或高度相關，可作為各成員的方法參考：
+
+### 成員 B 必讀
+- **Dehlaghi-Ghadim et al. (ICMLA 2023)** — *Federated Learning for Network Anomaly Detection in a Distributed Industrial Environment*
+  - 原作者團隊在 ICSSIM 上做 FL，結論：federated ≥ centralized > local
+  - 我們的差異化：加入 DP-SGD、Non-IID 深度分析、Byzantine-robust aggregation
+
+### 成員 A 參考
+- **Al-Naimi & Belhi (ICTIS 2024)** — *Deep Learning-Based Anomaly Detection in ICS Network Traffic*
+  - ICSSIM traffic-to-image + CNN 分類
+- **目前尚無** Anomaly Transformer 在 ICS-Flow 上的研究 → 明確貢獻空間
+
+### 成員 C 參考
+- **Physics-Guided Contrastive Temporal Graph Learning (Nature Sci. Reports, 2026)** — 引用 ICS-Flow，結合圖+對比學習+物理約束
+- **Omar (SPIE 2025)** — Replay 攻擊對 single-packet 方法結構性不可偵測，需序列/圖方法
+
+### 全員參考
+- **Dehlaghi-Ghadim et al. (Electronics, 2025)** — LLM-based IDS on ICSSIM (6 MITRE ATT&CK scenarios)，了解原作者最新方向
+
+---
+
 ## 預期成果
 
 | 方法 | 類型 | 預期改善方向 |
