@@ -1,0 +1,10 @@
+{
+  "method": "rf_baseline",
+  "task": "detection",
+  "seed": 4,
+  "split": "episode_block_v1",
+  "member": "shared",
+  "train_time_s": 0.4067375659942627,
+  "infer_time_s": 0.04147839546203613,
+  "n_params": 36920
+}

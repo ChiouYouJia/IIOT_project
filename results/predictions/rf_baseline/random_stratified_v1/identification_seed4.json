@@ -1,0 +1,10 @@
+{
+  "method": "rf_baseline",
+  "task": "identification",
+  "seed": 4,
+  "split": "random_stratified_v1",
+  "member": "shared",
+  "train_time_s": 0.44263505935668945,
+  "infer_time_s": 0.0397641658782959,
+  "n_params": 62092
+}

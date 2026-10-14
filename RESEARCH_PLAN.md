@@ -48,9 +48,9 @@
 - [ ] 環境建置 (Python, PyTorch, PyG, Flower, scikit-learn)
 - [ ] 下載 ICS-Flow 資料集 (Kaggle)
 - [ ] EDA：攻擊類型分佈、特徵相關性
-- [ ] 資料前處理：特徵標準化、train/val/test split (50/20/30)
+- [x] 資料前處理與共用切分：`data/splits/episode_block_v1.csv` (見 `docs/EVALUATION_PROTOCOL.md`)
 - [ ] 複現基線模型 (DT / RF / ANN)
-- [ ] 建立統一評估框架 (Accuracy, F1, Confusion Matrix)
+- [x] 建立統一評估框架：`src/utils/metrics.py` + `scripts/evaluate.py`
 
 ### 交付物
 - `notebooks/01_eda.ipynb`, `notebooks/02_baseline.ipynb`
@@ -124,7 +124,7 @@
 ## 第 7 週：綜合比較
 
 ### 任務
-- [ ] 統一實驗設定下比較三種方法 + 基線
+- [ ] 依 `docs/EVALUATION_PROTOCOL.md` 比較三種方法 + 基線 (`python scripts/evaluate.py`)
 - [ ] 各方法的 Confusion Matrix 比較
 - [ ] 整理成結果表格與視覺化圖表
 

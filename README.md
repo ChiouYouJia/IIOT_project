@@ -119,11 +119,15 @@ jupyter notebook notebooks/01_eda.ipynb
 python src/train.py --config configs/default.yaml --model lstm
 ```
 
-## 評估指標
+## 評估規範
 
-- Accuracy, Precision, Recall, F1-Score
-- Confusion Matrix
-- ROC-AUC
+三位成員的結果須依 **[docs/EVALUATION_PROTOCOL.md](docs/EVALUATION_PROTOCOL.md)** 產出，才能橫向比較：
+
+- 共用切分 `data/splits/episode_block_v1.csv` (以攻擊事件為單位，避免時序 / 圖模型資料洩漏)
+- NST 標籤；禁用 IP / MAC / 時間戳記作為特徵
+- 主要指標：detection → F1 (attack)、PR-AUC、FPR；identification → Macro-F1、ip-scan F1
+- 每個設定 5 seeds (0–4)，報告 mean ± std
+- 以 `save_predictions()` 輸出 test 預測，統一由 `python scripts/evaluate.py` 計算排行榜
 
 ## 相關文獻 (使用 ICS-Flow / ICSSIM 的近期研究)
 
