@@ -119,6 +119,8 @@ python scripts/evaluate.py
 
 ## 評估規範
 
+**上手請先看 [docs/USAGE_GUIDE.md](docs/USAGE_GUIDE.md)** (操作步驟與範例程式碼)。
+
 三位成員的結果須依 **[docs/EVALUATION_PROTOCOL.md](docs/EVALUATION_PROTOCOL.md)** 產出，才能橫向比較：
 
 - 共用切分 `data/splits/episode_block_v1.csv` (以攻擊事件為單位，避免時序 / 圖模型資料洩漏)
