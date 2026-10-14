@@ -5,7 +5,7 @@
     python scripts/evaluate.py --split random_stratified_v1
 
 輸出:
-    results/leaderboard_<split>.md          各方法 mean ± std (跨 seed)
+    results/leaderboard_<split>.md          各方法 mean ± std (跨 seed)，val_score 由 *_val.csv 自動計算
     results/runs_<split>.csv                每個 run 的完整指標
     results/confusion/<split>/<method>_<task>.csv   跨 seed 加總的 confusion matrix
 """
@@ -26,21 +26,22 @@ from src.data.loader import CLASSES, get_labels, load_raw, load_split_assignment
 from src.utils.metrics import PRED_DIR, RESULTS_DIR, detection_metrics, identification_metrics  # noqa: E402
 
 REQUIRED_SEEDS = 5
-PRIMARY = {"detection": ["f1", "pr_auc", "fpr", "recall", "precision", "mcc"],
-           "identification": ["macro_f1", "f1_ip-scan", "f1_mitm", "f1_replay", "balanced_acc", "weighted_f1"]}
+PRIMARY = {"detection": ["f1", "pr_auc", "fpr", "recall", "precision", "mcc", "val_score"],
+           "identification": ["macro_f1", "f1_ip-scan", "f1_mitm", "f1_replay", "balanced_acc", "weighted_f1",
+                              "val_score"]}
 FILE_RE = re.compile(r"(detection|identification)_seed(\d+)\.csv$")
 
 
-def validate(pred, task, test_ids, path):
+def validate(pred, task, expected_ids, path, part="test"):
     errors = []
     if pred["flow_id"].duplicated().any():
         errors.append("flow_id 有重複")
-    missing = test_ids.difference(pred["flow_id"])
-    extra = set(pred["flow_id"]).difference(test_ids)
+    missing = expected_ids.difference(pred["flow_id"])
+    extra = set(pred["flow_id"]).difference(expected_ids)
     if missing:
-        errors.append(f"缺少 {len(missing)} 筆測試 flow_id (必須對整個 test split 預測)")
+        errors.append(f"缺少 {len(missing)} 筆 {part} flow_id (必須對整個 {part} split 預測)")
     if extra:
-        errors.append(f"有 {len(extra)} 筆 flow_id 不屬於 test split")
+        errors.append(f"有 {len(extra)} 筆 flow_id 不屬於 {part} split")
     n_cls = 2 if task == "detection" else len(CLASSES)
     if not pred["y_pred"].between(0, n_cls - 1).all():
         errors.append(f"y_pred 超出範圍 0..{n_cls - 1}")
@@ -72,9 +73,10 @@ def main():
     df = load_raw()
     split = load_split_assignment(args.split).reindex(df.index)
     test_ids = set(df.index[split == "test"])
+    val_ids = set(df.index[split == "val"])
     labels = {t: get_labels(df, t, args.label_strategy) for t in PRIMARY}
 
-    rows, confusions, failed = [], {}, []
+    rows, confusions, failed, no_val = [], {}, [], []
     for path in sorted(PRED_DIR.glob(f"*/{args.split}/*.csv")):
         m = FILE_RE.search(path.name)
         if not m:
@@ -90,13 +92,29 @@ def main():
         metrics, y = score_run(pred, task, labels[task])
         meta_path = path.with_suffix(".json")
         meta = json.loads(meta_path.read_text()) if meta_path.exists() else {}
-        rows.append({"method": method, "task": task, "seed": seed, **metrics,
-                     **{k: meta.get(k) for k in ("n_params", "train_time_s", "infer_time_s")}})
+
+        val_score = np.nan
+        val_path = path.with_name(f"{task}_seed{seed}_val.csv")
+        if val_path.exists():
+            val_pred = pd.read_csv(val_path)
+            try:
+                validate(val_pred, task, val_ids, val_path, part="val")
+                val_score = score_run(val_pred, task, labels[task])[0][PRIMARY[task][0]]
+            except ValueError as e:
+                failed.append(str(e))
+        else:
+            no_val.append(str(val_path.relative_to(ROOT)))
+
+        rows.append({"method": method, "task": task, "seed": seed, **metrics, "val_score": val_score,
+                     **{k: meta.get(k) for k in ("member", "n_params", "train_time_s", "infer_time_s")}})
         cm = confusion_matrix(y, pred["y_pred"], labels=range(2 if task == "detection" else len(CLASSES)))
         confusions[(method, task)] = confusions.get((method, task), 0) + cm
 
     if failed:
-        print("以下預測檔驗證失敗，未納入排行榜:\n" + "\n".join(failed), file=sys.stderr)
+        print("以下預測檔驗證失敗 (test 失敗則該 run 不納入；val 失敗則 val_score 留空):\n" + "\n".join(failed),
+              file=sys.stderr)
+    if no_val:
+        print(f"{len(no_val)} 個 run 缺少 val 預測檔，val_score 留空:\n  " + "\n  ".join(no_val), file=sys.stderr)
     if not rows:
         print(f"找不到有效預測檔: {PRED_DIR.relative_to(ROOT)}/<method>/{args.split}/<task>_seed<k>.csv")
         return 1
@@ -112,7 +130,8 @@ def main():
             .to_csv(cm_dir / f"{method}_{task}.csv")
 
     lines = [f"# Leaderboard — split `{args.split}`, labels `{args.label_strategy}`", "",
-             "數值為跨 seed 的 mean ± std；`n` 為 seed 數，少於 5 者不列入正式比較。", ""]
+             "數值為跨 seed 的 mean ± std；`n` 為 seed 數，少於 5 者不列入正式比較。",
+             "`val_score` 由 val 預測檔自動計算 (detection: F1，identification: macro-F1)，代表變體須依此選出 (見 docs/EVALUATION_PROTOCOL.md §4)。", ""]
     for task, cols in PRIMARY.items():
         sub = runs[runs.task == task]
         if sub.empty:
@@ -127,7 +146,7 @@ def main():
             cells = []
             for c in cols:
                 mu, sd = agg.loc[meth, (c, "mean")], agg.loc[meth, (c, "std")]
-                cells.append(f"{mu:.4f} ± {0 if np.isnan(sd) else sd:.4f}")
+                cells.append("—" if np.isnan(mu) else f"{mu:.4f} ± {0 if np.isnan(sd) else sd:.4f}")
             flag = "" if n[meth] >= REQUIRED_SEEDS else " ⚠"
             lines.append(f"| {meth} | {n[meth]}{flag} | " + " | ".join(cells) + " |")
         lines.append("")

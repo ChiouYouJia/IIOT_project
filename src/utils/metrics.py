@@ -54,19 +54,25 @@ def identification_metrics(y_true, y_pred, proba=None):
     return m
 
 
-def save_predictions(method, task, seed, flow_ids, y_pred, score=None, meta=None, split_name="episode_block_v1"):
-    """輸出標準預測檔到 results/predictions/<method>/<split>/<task>_seed<seed>.csv。
+def save_predictions(method, task, seed, flow_ids, y_pred, score=None, meta=None,
+                     split_name="episode_block_v1", part="test"):
+    """輸出標準預測檔到 results/predictions/<method>/<split>/<task>_seed<seed>[_val].csv。
+
+    每個 run 要呼叫兩次：part="val" (val 預測，用來自動計算 val_score) 與 part="test" (附 meta)。
 
     Args:
         method: 方法名稱，如 "rf_baseline", "lstm_attn", "fl_fedavg_noniid", "gnn_gat"
         task: "detection" | "identification"
         seed: 隨機種子 (0-4)
-        flow_ids: 測試集 flow_id (必須涵蓋整個 test split，不可遺漏或重複)
+        flow_ids: 該 part 的 flow_id (必須涵蓋整個 val / test split，不可遺漏或重複)
         y_pred: 預測標籤 (detection: 0/1；identification: 0..5 依 CLASSES 順序)
         score: detection -> shape (n,) 的 P(attack)；
                identification -> shape (n, 6) 的各類別機率
-        meta: dict，建議包含 n_params, train_time_s, infer_time_s, hardware, notes
+        meta: dict，只在 part="test" 時寫出；必填欄位見 docs/EVALUATION_PROTOCOL.md §7
+        part: "test" | "val"
     """
+    if part not in ("test", "val"):
+        raise ValueError(f"part 必須是 'test' 或 'val'，收到 {part!r}")
     out_dir = PRED_DIR / method / split_name
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -78,11 +84,13 @@ def save_predictions(method, task, seed, flow_ids, y_pred, score=None, meta=None
         else:
             for i, c in enumerate(CLASSES):
                 df[f"prob_{c}"] = score[:, i]
-    df.to_csv(out_dir / f"{task}_seed{seed}.csv", index=False)
+    stem = f"{task}_seed{seed}" + ("_val" if part == "val" else "")
+    df.to_csv(out_dir / f"{stem}.csv", index=False)
 
-    meta = {"method": method, "task": task, "seed": seed, "split": split_name, **(meta or {})}
-    (out_dir / f"{task}_seed{seed}.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False))
-    return out_dir / f"{task}_seed{seed}.csv"
+    if part == "test":
+        meta = {"method": method, "task": task, "seed": seed, "split": split_name, **(meta or {})}
+        (out_dir / f"{stem}.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False))
+    return out_dir / f"{stem}.csv"
 
 
 def print_results(results, title="Results"):

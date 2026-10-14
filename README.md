@@ -25,7 +25,7 @@
 
 ## 研究目標
 
-1. **超越基線**: 論文使用 DT / RF / ANN，IP-Scan F1 僅 0.52，有明確改進空間
+1. **超越基線**: 論文使用 DT / RF / ANN，IP-Scan F1 僅約 0.52 (我們的 RF 基線 0.531)，有明確改進空間；二元偵測與多類別辨識都要做
 2. **時序異常偵測**: 論文指出 sequence anomaly detection 是未來方向
 3. **聯邦式學習**: 模擬分散式 ICS 場域，在保護資料隱私的前提下協同訓練
 
@@ -38,11 +38,12 @@
 
 ### 方法二：Federated Learning 聯邦式學習（成員 B）
 - 模擬多個 ICS 場域各自訓練本地模型，透過聯邦學習聚合全域模型
+- 主要實驗以逐筆 MLP 為本地模型；若 LSTM 明顯較好，再加做 FL-LSTM
 - 探索 Non-IID 資料分佈下的異常偵測效能
 - 比較 FedAvg / FedProx 聯邦策略
 
 ### 方法三：Graph Neural Network（成員 C）
-- 將網路流量建模為圖結構 (節點=ICS 元件, 邊=通訊流量)
+- 將網路流量建模為圖結構 (節點=ICS 元件 `sAddress`/`rAddress`, 邊=通訊流量)
 - 使用 GAT 捕捉 ICS 元件間的通訊模式異常
 
 ## 專案結構
@@ -53,36 +54,31 @@ IIOT_project/
 ├── RESEARCH_PLAN.md             # 詳細研究計畫 (8 週)
 ├── setup/
 │   └── environment.yml          # Conda 環境設定
+├── docs/
+│   └── EVALUATION_PROTOCOL.md   # 評估規範 (全員必讀)
 ├── data/
 │   ├── raw/                     # 原始資料 (從 Kaggle 下載)
+│   ├── splits/                  # 共用切分檔 (已 commit，不可自行重切)
 │   └── processed/               # 前處理後的資料
-├── notebooks/
-│   ├── 01_eda.ipynb             # 探索性資料分析
-│   ├── 02_baseline.ipynb        # 基線模型複現
-│   ├── 03_lstm.ipynb            # LSTM + Attention
-│   ├── 04_gnn.ipynb             # GNN-based detection
-│   └── 05_federated.ipynb       # 聯邦式學習
+├── notebooks/                   # (待建立) 01_eda / 02_baseline / 03_lstm / 04_gnn / 05_federated
 ├── src/
 │   ├── data/
-│   │   ├── __init__.py
-│   │   ├── loader.py            # 資料載入
-│   │   └── preprocess.py        # 資料前處理
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── baseline.py          # DT / RF / ANN 基線
-│   │   ├── lstm_attention.py    # LSTM + Attention
-│   │   ├── gnn_detector.py      # GNN
-│   │   └── federated.py         # 聯邦式學習
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   ├── metrics.py           # 評估指標
-│   │   └── visualization.py     # 視覺化工具
-│   └── train.py                 # 訓練腳本
+│   │   └── loader.py            # 資料載入 + 共用切分 (load_split, sort_by_time)
+│   ├── models/                  # (待建立) baseline / lstm_attention / gnn_detector / federated
+│   └── utils/
+│       └── metrics.py           # 評估指標 + save_predictions
+├── scripts/
+│   ├── make_splits.py           # 產生共用切分 (已執行，勿重跑覆蓋)
+│   ├── baseline_rf.py           # RF 基線 + 預測檔範本
+│   └── evaluate.py              # 統一評估、產生排行榜
 ├── configs/
-│   └── default.yaml             # 實驗配置
-├── results/                     # 實驗結果
+│   └── default.yaml             # 實驗配置 (只有 data 區塊強制共用)
+├── results/
+│   └── predictions/             # 各方法的預測檔 (commit)
 └── references/                  # 參考論文 PDF
 ```
+
+標示「待建立」的檔案由各成員依研究計畫建立。
 
 ## 快速開始
 
@@ -109,15 +105,17 @@ kaggle datasets download -d alirezadehlaghi/icssim -p data/raw --unzip
 # 下載後解壓至 data/raw/
 ```
 
-### 3. 執行實驗
+### 3. 跑基線與評估
 
 ```bash
-# EDA
-jupyter notebook notebooks/01_eda.ipynb
+# RF 基線 (5 seeds × detection / identification)，輸出到 results/predictions/rf_baseline/
+python scripts/baseline_rf.py
 
-# 訓練模型
-python src/train.py --config configs/default.yaml --model lstm
+# 讀取所有人的預測檔，產生 results/leaderboard_episode_block_v1.md
+python scripts/evaluate.py
 ```
+
+各成員的模型請參考 `scripts/baseline_rf.py` 的寫法，用 `load_split()` 載入資料、`save_predictions()` 輸出預測。
 
 ## 評估規範
 
@@ -126,7 +124,7 @@ python src/train.py --config configs/default.yaml --model lstm
 - 共用切分 `data/splits/episode_block_v1.csv` (以攻擊事件為單位，避免時序 / 圖模型資料洩漏)
 - NST 標籤；禁用 IP / MAC / 時間戳記作為特徵
 - 主要指標：detection → F1 (attack)、PR-AUC、FPR；identification → Macro-F1、ip-scan F1
-- 每個設定 5 seeds (0–4)，報告 mean ± std
+- 每個設定 5 seeds (0–4)，報告 mean ± std；代表變體依 val 分數選出
 - 以 `save_predictions()` 輸出 test 預測，統一由 `python scripts/evaluate.py` 計算排行榜
 
 ## 相關文獻 (使用 ICS-Flow / ICSSIM 的近期研究)

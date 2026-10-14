@@ -4,7 +4,10 @@
   "seed": 4,
   "split": "random_stratified_v1",
   "member": "shared",
-  "train_time_s": 0.40698719024658203,
-  "infer_time_s": 0.03892993927001953,
-  "n_params": 41044
+  "detection_from": "separate",
+  "n_params": 41044,
+  "train_time_s": 0.5161502361297607,
+  "infer_time_s": 0.06765627861022949,
+  "hardware": "cpu",
+  "notes": "n_estimators=100, sklearn defaults"
 }

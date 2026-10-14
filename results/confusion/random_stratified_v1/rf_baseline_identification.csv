@@ -1,7 +1,0 @@
-,pred_Normal,pred_ddos,pred_ip-scan,pred_mitm,pred_port-scan,pred_replay
-true_Normal,54936,0,15,42,52,15
-true_ddos,0,2900,0,0,0,0
-true_ip-scan,0,0,270,10,0,10
-true_mitm,15,0,155,3527,10,168
-true_port-scan,95,0,205,1,2609,5
-true_replay,25,0,85,250,0,3180

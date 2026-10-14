@@ -32,6 +32,13 @@ def main():
             clf.fit(data["X_train"], data["y_train"])
             train_time = time.time() - t0
 
+            # val 預測：evaluate.py 用它自動計算 val_score
+            val_proba = clf.predict_proba(data["X_val"])
+            save_predictions("rf_baseline", task, seed, flow_ids=data["X_val"].index,
+                             y_pred=val_proba.argmax(1),
+                             score=val_proba[:, 1] if task == "detection" else val_proba,
+                             split_name=args.split, part="val")
+
             t0 = time.time()
             proba = clf.predict_proba(data["X_test"])
             infer_time = time.time() - t0
@@ -41,8 +48,11 @@ def main():
                 flow_ids=data["X_test"].index,
                 y_pred=proba.argmax(1),
                 score=proba[:, 1] if task == "detection" else proba,
-                meta={"member": "shared", "train_time_s": train_time, "infer_time_s": infer_time,
-                      "n_params": sum(e.tree_.node_count for e in clf.estimators_)},
+                meta={"member": "shared",
+                      **({"detection_from": "separate"} if task == "detection" else {}),
+                      "n_params": sum(e.tree_.node_count for e in clf.estimators_),
+                      "train_time_s": train_time, "infer_time_s": infer_time,
+                      "hardware": "cpu", "notes": "n_estimators=100, sklearn defaults"},
                 split_name=args.split,
             )
             print(f"{task} seed={seed} done ({train_time:.1f}s)")

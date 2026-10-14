@@ -2,7 +2,7 @@
 
 **時程**: 8 週
 **成員**: 3 人
-**目標**: 使用現代深度學習方法改進 ICS 網路流量異常偵測，超越論文基線 (RF: F1=0.995 detection, F1=0.52~0.98 identification)
+**目標**: 使用現代深度學習方法改進 ICS 網路流量異常偵測，超越我們在共用切分 `episode_block_v1` 上的 RF 基線 (detection F1 0.980；identification macro-F1 0.880，ip-scan F1 0.531)。原論文數字 (detection F1 0.995) 是逐筆隨機切分的結果，條件不同，不作為比較對象。
 
 ---
 
@@ -99,17 +99,19 @@
 
 | 週次 | 任務 |
 |------|------|
-| 第 3 週 | 設計資料分割策略 (IID / Non-IID)，搭建 Flower 框架 |
-| 第 4 週 | 實作 FedAvg / FedProx，訓練 + 測試 |
-| 第 5 週 | Non-IID 實驗（不同 client 面臨不同攻擊），比較 federated vs centralized |
+| 第 3 週 | 設計 client 切分 (IID / Non-IID，只從 train 切，固定後 commit)，以逐筆 MLP 搭建 Flower 框架 |
+| 第 4 週 | FL-MLP：FedAvg / FedProx、IID / Non-IID、federated vs centralized vs local-only。週末檢查 A 的 LSTM 是否在 val macro-F1 明顯勝過 ANN |
+| 第 5 週 | 若 LSTM 明顯較好：用與 A 相同的 LSTM 架構跑 FL-LSTM 作為代表變體；否則以 FL-MLP 為代表，繼續 Non-IID 分析 |
 
 **核心實驗**:
 - [ ] Binary detection + multi-class identification (兩個任務都要在 FL 設定下完成)
-- [ ] Centralized vs Federated 效能比較
+- [ ] Centralized vs Federated 效能比較 (一律與同架構比較：FL-MLP 對 ANN，FL-LSTM 對 A 的 LSTM)
 - [ ] IID vs Non-IID 資料分佈的影響 (Non-IID 下部分 client 缺少某些攻擊類別，觀察多類別 per-class F1 的變化)
 - [ ] FedAvg vs FedProx 聚合策略比較
 
-**交付物**: `src/models/federated.py`, `notebooks/05_federated.ipynb`
+**交付物**: `src/models/federated.py`, `notebooks/05_federated.ipynb`, `data/splits/fl_<partition>_v1.csv`
+
+> 本地模型為何先用 MLP：FL 要回答的問題 (資料分佈、聚合策略、聯邦 vs 集中) 與模型架構無關，MLP 訓練快、穩定，結論較乾淨；每個 client 只有約 5 千筆、Non-IID 下部分 client 沒有 ip-scan，LSTM 較難收斂。最後再用 FL-LSTM 回答「最好的模型在聯邦設定下保有多少效能」。
 
 ### 成員 C：Graph Neural Network
 
@@ -117,13 +119,13 @@
 
 | 週次 | 任務 |
 |------|------|
-| 第 3 週 | 圖結構建模（節點=ICS 元件, 邊=通訊流量），實作 GAT |
+| 第 3 週 | 圖結構建模（節點=`sAddress`/`rAddress`, 邊=flow；注意 ARP flow 沒有 IP，ip-scan 全部是 ARP），實作 GAT |
 | 第 4 週 | 訓練 + 測試，與基線比較 |
 | 第 5 週 | 調參，分析 IP-Scan 偵測效果（GNN 天然適合偵測新增節點） |
 
 **核心實驗**:
 - [ ] Binary detection + multi-class identification
-- [ ] IP-Scan F1 改善分析（原論文僅 0.52）
+- [ ] IP-Scan F1 改善分析（RF 基線 0.531）
 - [ ] 與基線 RF 的效能比較
 
 **交付物**: `src/models/gnn_detector.py`, `notebooks/04_gnn.ipynb`
@@ -141,6 +143,7 @@
 ## 第 7 週：綜合比較
 
 ### 任務
+- [ ] 每人依 val 分數選出代表變體，填入 `docs/EVALUATION_PROTOCOL.md` §4 的表格 (第 7 週開始前)
 - [ ] 依 `docs/EVALUATION_PROTOCOL.md` 比較三種方法 + 基線 (`python scripts/evaluate.py`)
 - [ ] 二元與多類別兩個任務分別製作比較表
 - [ ] 各方法的多類別 Confusion Matrix 比較 (重點：ip-scan、mitm vs replay 混淆)

@@ -1,65 +1,44 @@
+# 只有 `data` 區塊是全組強制共用的 (見 docs/EVALUATION_PROTOCOL.md)。
+# 其餘區塊為各方法的預設值，可自行調整；最終使用的值請寫進預測檔 meta 的 notes。
+
 data:
   label_strategy: NST
-  task: detection         # detection | identification
-  split: episode_block_v1 # data/splits/<split>.csv，見 docs/EVALUATION_PROTOCOL.md
+  tasks: [detection, identification]   # 兩個任務都必做
+  split: episode_block_v1 # data/splits/<split>.csv
   seeds: [0, 1, 2, 3, 4]
-  window_size: 20         # for sequence models
-  stride: 1
 
 training:
   batch_size: 256
   epochs: 100
   learning_rate: 0.001
   weight_decay: 0.0001
-  early_stopping_patience: 10
+  early_stopping_patience: 10   # 依 val F1 (detection) / val macro-F1 (identification)
   device: auto            # auto | cuda | cpu
 
-transformer:
-  d_model: 64
-  n_heads: 4
-  n_layers: 3
-  d_ff: 128
-  dropout: 0.1
-  anomaly_ratio: 0.1
+# 成員 A
+temporal:
+  model_type: lstm
+  sequence: global        # global | per_pair
+  window_size: 20
+  hidden_dim: 128
+  n_layers: 2
+  dropout: 0.2
 
+# 成員 C
 gnn:
+  node_key: address       # address (sAddress/rAddress) | address_merged (IP 與 MAC 合併)
   hidden_dim: 64
   n_layers: 3
   heads: 4
   dropout: 0.2
   time_window: 10         # seconds
 
-temporal:
-  model_type: lstm        # lstm | tcn
-  hidden_dim: 128
-  n_layers: 2
-  dropout: 0.2
-
-contrastive:
-  embedding_dim: 64
-  temperature: 0.1
-  augmentation: ["jitter", "scale"]
-
-multimodal:
-  network_encoder: transformer
-  process_encoder: lstm
-  fusion: cross_attention  # early | late | cross_attention
-  hidden_dim: 64
-
+# 成員 B
 federated:
   num_clients: 4
-  partition: non_iid_attack  # iid | non_iid_attack | non_iid_quantity | non_iid_time
+  partition: non_iid_attack  # iid | non_iid_attack；切分檔 data/splits/fl_<partition>_v1.csv
   rounds: 50
   local_epochs: 5
-  local_model: lstm          # lstm | transformer | mlp
-  strategy: fedavg           # fedavg | fedprox | fedbn | fednova
+  local_model: mlp           # mlp (主要實驗) | lstm (第 5 週，沿用 temporal 設定)
+  strategy: fedavg           # fedavg | fedprox
   fedprox_mu: 0.01
-  dp:
-    enabled: false
-    epsilon: 8.0
-    delta: 1e-5
-    max_grad_norm: 1.0
-  byzantine:
-    enabled: false
-    num_malicious: 1
-    defense: krum             # krum | trimmed_mean | none

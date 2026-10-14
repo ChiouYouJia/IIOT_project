@@ -35,6 +35,11 @@ def load_raw(data_dir=None):
     return df
 
 
+def sort_by_time(df):
+    """依 (start, flow_id) 排序；start 有重複，第二鍵確保全組順序一致。"""
+    return df.assign(_fid=df.index).sort_values(["start", "_fid"]).drop(columns="_fid")
+
+
 def load_split_assignment(split_name=DEFAULT_SPLIT):
     """回傳 Series: flow_id -> 'train' | 'val' | 'test'。"""
     s = pd.read_csv(SPLIT_DIR / f"{split_name}.csv", index_col="flow_id")

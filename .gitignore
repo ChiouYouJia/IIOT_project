@@ -38,6 +38,9 @@ Thumbs.db
 results/*.png
 results/*.csv
 results/*.json
+# 排行榜由各自在本地以 scripts/evaluate.py 產生，不 commit
+results/leaderboard_*.md
+results/confusion/
 wandb/
 runs/
 
