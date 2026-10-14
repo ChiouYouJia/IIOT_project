@@ -6,6 +6,22 @@
 
 ---
 
+## 分類任務：二元 + 多類別 (全員必做)
+
+每位成員的方法都必須同時完成以下兩個任務，**不可只做二元分類**：
+
+| 任務 | 類別 | 主要指標 |
+|------|------|---------|
+| **Detection (二元)** | Normal / Attack | F1 (attack)、PR-AUC、FPR |
+| **Identification (多類別)** | Normal / ddos / ip-scan / mitm / port-scan / replay (6 類) | Macro-F1、各類別 F1 (特別是 ip-scan) |
+
+- 多類別才是本研究的重點：二元偵測 RF 基線已接近 F1 0.99，改進空間很小；多類別中 ip-scan F1 僅約 0.53，mitm / replay 也容易混淆。
+- 多類別模型輸出層為 6 類 softmax，類別編碼固定使用 `src.data.loader.CLASSES`。
+- 類別極度不平衡 (ip-scan 在 train 只有 96 筆)，建議嘗試 class-weighted loss / focal loss / 過採樣 (只能作用在 train)。
+- 細節見 `docs/EVALUATION_PROTOCOL.md`。
+
+---
+
 ## 成員分工
 
 | 成員 | 負責方法 | 核心任務 |
@@ -88,8 +104,9 @@
 | 第 5 週 | Non-IID 實驗（不同 client 面臨不同攻擊），比較 federated vs centralized |
 
 **核心實驗**:
+- [ ] Binary detection + multi-class identification (兩個任務都要在 FL 設定下完成)
 - [ ] Centralized vs Federated 效能比較
-- [ ] IID vs Non-IID 資料分佈的影響
+- [ ] IID vs Non-IID 資料分佈的影響 (Non-IID 下部分 client 缺少某些攻擊類別，觀察多類別 per-class F1 的變化)
 - [ ] FedAvg vs FedProx 聚合策略比較
 
 **交付物**: `src/models/federated.py`, `notebooks/05_federated.ipynb`
@@ -125,7 +142,8 @@
 
 ### 任務
 - [ ] 依 `docs/EVALUATION_PROTOCOL.md` 比較三種方法 + 基線 (`python scripts/evaluate.py`)
-- [ ] 各方法的 Confusion Matrix 比較
+- [ ] 二元與多類別兩個任務分別製作比較表
+- [ ] 各方法的多類別 Confusion Matrix 比較 (重點：ip-scan、mitm vs replay 混淆)
 - [ ] 整理成結果表格與視覺化圖表
 
 ### 交付物
