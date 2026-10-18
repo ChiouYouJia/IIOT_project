@@ -134,7 +134,7 @@ src.data.loader.load_split()  →  訓練 (只用 train，調參只看 val)
 
 | 成員 | 代表變體 (detection) | 代表變體 (identification) |
 |------|------|------|
-| A — LSTM | | |
+| A — LSTM |lstm_attn_global_w20 |lstm_attn_global_w20 |
 | B — FL | | |
 | C — GNN | | |
 
