@@ -65,6 +65,8 @@ def score_run(pred, task, y_true):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", default="episode_block_v1")
     ap.add_argument("--label-strategy", default="NST")
@@ -152,7 +154,9 @@ def main():
         lines.append("")
 
     out = RESULTS_DIR / f"leaderboard_{args.split}.md"
-    out.write_text("\n".join(lines))
+    # Explicit UTF-8 keeps the warning symbol (⚠) portable on Windows
+    # consoles whose default encoding is commonly cp950.
+    out.write_text("\n".join(lines), encoding="utf-8")
     print("\n".join(lines))
     print(f"-> {out.relative_to(ROOT)}")
     return 1 if failed else 0
