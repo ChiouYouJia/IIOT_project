@@ -1,0 +1,12 @@
+{
+  "method": "ann_baseline",
+  "task": "identification",
+  "seed": 4,
+  "split": "episode_block_v1",
+  "member": "shared",
+  "n_params": 15169,
+  "train_time_s": 139.99364066123962,
+  "infer_time_s": 0.05197429656982422,
+  "hardware": "cpu",
+  "notes": "paper Table 11: {'hidden_layer_sizes': (257,), 'activation': 'logistic', 'solver': 'lbfgs', 'max_iter': 1000}, all load_split() features (no MRMR)"
+}

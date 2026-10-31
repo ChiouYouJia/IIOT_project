@@ -1,0 +1,13 @@
+{
+  "method": "ann_baseline",
+  "task": "detection",
+  "seed": 3,
+  "split": "random_stratified_v1",
+  "member": "shared",
+  "detection_from": "separate",
+  "n_params": 4267,
+  "train_time_s": 62.68938732147217,
+  "infer_time_s": 0.01573467254638672,
+  "hardware": "cpu",
+  "notes": "paper Table 11: {'hidden_layer_sizes': (79,), 'activation': 'logistic', 'solver': 'lbfgs', 'max_iter': 1000}, all load_split() features (no MRMR)"
+}

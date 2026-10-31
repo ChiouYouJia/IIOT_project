@@ -1,0 +1,12 @@
+{
+  "method": "dt_baseline",
+  "task": "identification",
+  "seed": 1,
+  "split": "episode_block_v1",
+  "member": "shared",
+  "n_params": 449,
+  "train_time_s": 0.33045458793640137,
+  "infer_time_s": 0.0046269893646240234,
+  "hardware": "cpu",
+  "notes": "paper Table 11: {'criterion': 'gini', 'max_leaf_nodes': 1001}, all load_split() features (no MRMR)"
+}

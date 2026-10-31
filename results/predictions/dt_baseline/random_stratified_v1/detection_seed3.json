@@ -1,0 +1,13 @@
+{
+  "method": "dt_baseline",
+  "task": "detection",
+  "seed": 3,
+  "split": "random_stratified_v1",
+  "member": "shared",
+  "detection_from": "separate",
+  "n_params": 217,
+  "train_time_s": 0.19954586029052734,
+  "infer_time_s": 0.0029027462005615234,
+  "hardware": "cpu",
+  "notes": "paper Table 11: {'criterion': 'entropy', 'max_leaf_nodes': 315}, all load_split() features (no MRMR)"
+}

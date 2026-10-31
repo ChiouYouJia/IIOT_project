@@ -34,6 +34,7 @@ conda activate ics-anomaly          # 或 pip install -r setup/requirements.txt
 
 ```bash
 python scripts/baseline_rf.py      # 約 10 秒
+python scripts/baseline_dt_ann.py  # DT / ANN 基線，ANN 較慢 (約 30 分鐘)；已 commit 預測檔，可略過
 python scripts/evaluate.py
 ```
 
