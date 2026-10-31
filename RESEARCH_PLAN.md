@@ -65,7 +65,7 @@
 - [ ] 下載 ICS-Flow 資料集 (Kaggle)
 - [ ] EDA：攻擊類型分佈、特徵相關性
 - [x] 資料前處理與共用切分：`data/splits/episode_block_v1.csv` (見 `docs/EVALUATION_PROTOCOL.md`)
-- [ ] 複現基線模型 (DT / RF / ANN)
+- [x] 複現基線模型 (DT / RF / ANN)：`scripts/baseline_rf.py`、`scripts/baseline_dt_ann.py`，與論文對照見 `docs/EVALUATION_PROTOCOL.md` §3
 - [x] 建立統一評估框架：`src/utils/metrics.py` + `scripts/evaluate.py`
 
 ### 交付物
@@ -89,7 +89,7 @@
 **核心實驗**:
 - [ ] Binary detection: Normal vs Attack
 - [ ] Multi-class identification: 各攻擊類型的 F1
-- [ ] 與基線 RF 的效能比較
+- [x] 與基線 RF 的效能比較
 
 **交付物**: `src/models/lstm_attention.py`, `notebooks/03_lstm.ipynb`
 
@@ -124,9 +124,9 @@
 | 第 5 週 | 調參，分析 IP-Scan 偵測效果（GNN 天然適合偵測新增節點） |
 
 **核心實驗**:
-- [ ] Binary detection + multi-class identification
-- [ ] IP-Scan F1 改善分析（RF 基線 0.531）
-- [ ] 與基線 RF 的效能比較
+- [x] Binary detection + multi-class identification (見 `docs/GNN_RESULTS.md`)
+- [x] IP-Scan F1 改善分析（RF 基線 0.531 → GNN 0.953）
+- [x] 與基線 RF 的效能比較
 
 **交付物**: `src/models/gnn_detector.py`, `notebooks/04_gnn.ipynb`
 

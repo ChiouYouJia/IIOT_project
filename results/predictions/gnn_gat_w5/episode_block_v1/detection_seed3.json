@@ -1,0 +1,15 @@
+{
+  "method": "gnn_gat_w5",
+  "task": "detection",
+  "seed": 3,
+  "split": "episode_block_v1",
+  "member": "C",
+  "detection_from": "separate",
+  "n_params": 158146,
+  "train_time_s": 20.241392850875854,
+  "infer_time_s": 0.30675411224365234,
+  "hardware": "cpu",
+  "graph_window": 5.0,
+  "node_key": "address",
+  "notes": "hidden=64, heads=4, layers=2, dropout=0.2, lr=0.001, wd=0.0001, batch=32, class_weight=none, epochs_run=26, patience=10"
+}

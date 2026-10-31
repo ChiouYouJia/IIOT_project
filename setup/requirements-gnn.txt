@@ -1,0 +1,10 @@
+# 成員 C (GNN) 實際使用的環境 (CPU 版 PyTorch)，安裝方式：
+#   python3 -m venv .venv
+#   .venv/bin/pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+#   .venv/bin/pip install -r setup/requirements-gnn.txt
+torch_geometric==2.8.1
+numpy==2.5.4
+pandas==3.0.6
+scikit-learn==1.9.1
+pyyaml==6.0.3
+tqdm==4.70.1

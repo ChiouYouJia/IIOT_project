@@ -93,14 +93,28 @@ src.data.loader.load_split()  →  訓練 (只用 train，調參只看 val)
 
 ### 次要切分：`random_stratified_v1` (僅供對照原論文)
 
-逐筆隨機分層 50/20/30。只用來說明「我們的 RF 基線與原論文一致」，**不作為方法間比較的依據**。
+逐筆隨機分層 50/20/30。只用來說明「我們的基線與原論文一致」，**不作為方法間比較的依據**。
 
-參考：RF 基線在兩種切分下的差異 (5 seeds)
+原論文複現 (`random_stratified_v1`，5 seeds 平均；論文 macro-F1 由 Table 13 各類別 F1 平均算出)：
 
-| split | detection F1 | identification macro-F1 | ip-scan F1 |
-|-------|-----:|-----:|-----:|
-| random_stratified_v1 | 0.9908 | 0.8827 | 0.529 |
-| episode_block_v1 | 0.9803 | 0.8801 | 0.531 |
+| 基線 | detection F1 (論文 / 我們) | identification macro-F1 (論文 / 我們) | ip-scan F1 (論文 / 我們) |
+|------|-----:|-----:|-----:|
+| DT | 0.9850 / 0.9856 | 0.879 / 0.880 | 0.521 / 0.525 |
+| RF | 0.9885 / 0.9908 | 0.885 / 0.883 | 0.536 / 0.529 |
+| ANN | 0.9860 / 0.9830 | 0.871 / 0.886 | 0.469 / 0.543 |
+
+與論文的差異：論文用 MRMR 選出 23 個特徵並在 MATLAB 調參；我們用 `load_split()` 的全部特徵，DT / ANN 採用論文 Table 11 的超參數 (對應方式見 `scripts/baseline_dt_ann.py`)，RF 用 sklearn 預設值。
+
+參考：基線在兩種切分下的差異 (5 seeds)
+
+| split | 基線 | detection F1 | identification macro-F1 | ip-scan F1 |
+|-------|------|-----:|-----:|-----:|
+| random_stratified_v1 | DT | 0.9856 | 0.8799 | 0.525 |
+| random_stratified_v1 | RF | 0.9908 | 0.8827 | 0.529 |
+| random_stratified_v1 | ANN | 0.9830 | 0.8856 | 0.543 |
+| episode_block_v1 | DT | 0.9805 | 0.8753 | 0.531 |
+| episode_block_v1 | RF | 0.9803 | 0.8801 | 0.531 |
+| episode_block_v1 | ANN | 0.9779 | 0.8693 | 0.529 |
 
 ---
 
@@ -136,7 +150,7 @@ src.data.loader.load_split()  →  訓練 (只用 train，調參只看 val)
 |------|------|------|
 | A — LSTM |lstm_attn_global_w20 |lstm_attn_global_w20 |
 | B — FL | | |
-| C — GNN | | |
+| C — GNN | `gnn_gat_w5` | `gnn_gat_w10_merged` |
 
 其餘變體放在各自章節做消融 / 分析用。
 
@@ -186,7 +200,7 @@ src.data.loader.load_split()  →  訓練 (只用 train，調參只看 val)
 ### 基線
 
 - `scripts/baseline_rf.py` 已提供 RF 基線 (`rf_baseline`)，也是產出預測檔的範本。
-- DT / ANN 基線請比照同樣格式提交 (`dt_baseline`, `ann_baseline`)。ANN 同時是 FL-MLP 的 centralized 對照組。
+- `scripts/baseline_dt_ann.py` 提供 DT / ANN 基線 (`dt_baseline`, `ann_baseline`)，超參數依原論文 Table 11。ANN 同時是 FL-MLP 的 centralized 對照組。
 
 ---
 

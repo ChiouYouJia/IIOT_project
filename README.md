@@ -25,7 +25,7 @@
 
 ## 研究目標
 
-1. **超越基線**: 論文使用 DT / RF / ANN，IP-Scan F1 僅約 0.52 (我們的 RF 基線 0.531)，有明確改進空間；二元偵測與多類別辨識都要做
+1. **超越基線**: 論文使用 DT / RF / ANN，IP-Scan F1 僅約 0.52 (已複現三者，見 `docs/EVALUATION_PROTOCOL.md` §3；我們的 RF 基線 0.531)，有明確改進空間；二元偵測與多類別辨識都要做
 2. **時序異常偵測**: 論文指出 sequence anomaly detection 是未來方向
 3. **聯邦式學習**: 模擬分散式 ICS 場域，在保護資料隱私的前提下協同訓練
 
@@ -45,6 +45,7 @@
 ### 方法三：Graph Neural Network（成員 C）
 - 將網路流量建模為圖結構 (節點=ICS 元件 `sAddress`/`rAddress`, 邊=通訊流量)
 - 使用 GAT 捕捉 ICS 元件間的通訊模式異常
+- 目前結果：identification macro-F1 0.950 (RF 0.880)、ip-scan F1 0.953 (RF 0.531)，詳見 [docs/GNN_RESULTS.md](docs/GNN_RESULTS.md)
 
 ## 專案結構
 
@@ -55,7 +56,8 @@ IIOT_project/
 ├── setup/
 │   └── environment.yml          # Conda 環境設定
 ├── docs/
-│   └── EVALUATION_PROTOCOL.md   # 評估規範 (全員必讀)
+│   ├── EVALUATION_PROTOCOL.md   # 評估規範 (全員必讀)
+│   └── GNN_RESULTS.md           # 成員 C 的 GNN 實驗紀錄
 ├── data/
 │   ├── raw/                     # 原始資料 (從 Kaggle 下載)
 │   ├── splits/                  # 共用切分檔 (已 commit，不可自行重切)
@@ -64,12 +66,14 @@ IIOT_project/
 ├── src/
 │   ├── data/
 │   │   └── loader.py            # 資料載入 + 共用切分 (load_split, sort_by_time)
-│   ├── models/                  # (待建立) baseline / lstm_attention / gnn_detector / federated
+│   ├── models/                  # gnn_detector.py；(待建立) baseline / lstm_attention / federated
 │   └── utils/
 │       └── metrics.py           # 評估指標 + save_predictions
 ├── scripts/
 │   ├── make_splits.py           # 產生共用切分 (已執行，勿重跑覆蓋)
 │   ├── baseline_rf.py           # RF 基線 + 預測檔範本
+│   ├── baseline_dt_ann.py       # DT / ANN 基線 (論文 Table 11 超參數)
+│   ├── train_gnn.py             # GNN (EdgeGAT) 訓練 + 輸出預測
 │   └── evaluate.py              # 統一評估、產生排行榜
 ├── configs/
 │   └── default.yaml             # 實驗配置 (只有 data 區塊強制共用)
@@ -110,6 +114,8 @@ kaggle datasets download -d alirezadehlaghi/icssim -p data/raw --unzip
 ```bash
 # RF 基線 (5 seeds × detection / identification)，輸出到 results/predictions/rf_baseline/
 python scripts/baseline_rf.py
+# 論文的 DT / ANN 基線 (超參數依論文 Table 11)，輸出到 results/predictions/{dt,ann}_baseline/
+python scripts/baseline_dt_ann.py
 
 # 讀取所有人的預測檔，產生 results/leaderboard_episode_block_v1.md
 python scripts/evaluate.py
