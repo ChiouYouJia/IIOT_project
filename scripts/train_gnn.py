@@ -62,7 +62,8 @@ def train_one(args, graphs, n_classes, seed):
     set_seed(seed)
     g0 = graphs[0]
     model = EdgeGAT(g0.x.size(1), g0.edge_attr.size(1), g0.flow_x.size(1), n_classes,
-                    hidden=args.hidden, heads=args.heads, n_layers=args.layers, dropout=args.dropout)
+                    hidden=args.hidden, heads=args.heads, n_layers=args.layers, dropout=args.dropout,
+                    use_nodes=not args.flow_only)
     opt = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     loss_fn = nn.CrossEntropyLoss(weight=class_weights(graphs, n_classes, args.class_weight))
 
@@ -106,6 +107,7 @@ def main():
     ap.add_argument("--hidden", type=int, default=64)
     ap.add_argument("--heads", type=int, default=4)
     ap.add_argument("--layers", type=int, default=2)
+    ap.add_argument("--flow-only", action="store_true", help="消融：分類器只用 flow 特徵 (不用圖)")
     ap.add_argument("--dropout", type=float, default=0.2)
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--weight-decay", type=float, default=1e-4)
@@ -148,7 +150,7 @@ def main():
                     "train_time_s": train_time, "infer_time_s": infer_time, "hardware": "cpu",
                     "graph_window": args.window, "node_key": args.node_key,
                     "notes": (f"hidden={args.hidden}, heads={args.heads}, layers={args.layers}, "
-                              f"dropout={args.dropout}, lr={args.lr}, wd={args.weight_decay}, "
+                              f"flow_only={args.flow_only}, dropout={args.dropout}, lr={args.lr}, wd={args.weight_decay}, "
                               f"batch={args.batch_size}, class_weight={args.class_weight}, "
                               f"epochs_run={n_epochs}, patience={args.patience}"),
                 }

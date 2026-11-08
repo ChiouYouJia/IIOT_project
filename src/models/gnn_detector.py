@@ -91,8 +91,12 @@ def build_window_graphs(data, window=10.0, node_key="address"):
 
 
 class EdgeGAT(nn.Module):
-    def __init__(self, node_dim, edge_dim, flow_dim, n_classes, hidden=64, heads=4, n_layers=2, dropout=0.2):
+    def __init__(self, node_dim, edge_dim, flow_dim, n_classes, hidden=64, heads=4, n_layers=2, dropout=0.2,
+                 use_nodes=True):
+        """n_layers=0：不做 message passing，只用窗口內的節點聚合特徵 (消融)。
+        use_nodes=False：分類器只看 flow 特徵 (等同逐筆 MLP，消融)。"""
         super().__init__()
+        self.use_nodes = use_nodes
         self.convs = nn.ModuleList()
         in_dim = node_dim
         for _ in range(n_layers):
@@ -100,11 +104,13 @@ class EdgeGAT(nn.Module):
             in_dim = hidden * heads
         self.dropout = dropout
         self.classifier = nn.Sequential(
-            nn.Linear(2 * in_dim + flow_dim, hidden), nn.ReLU(), nn.Dropout(dropout),
+            nn.Linear((2 * in_dim if use_nodes else 0) + flow_dim, hidden), nn.ReLU(), nn.Dropout(dropout),
             nn.Linear(hidden, n_classes),
         )
 
     def forward(self, batch):
+        if not self.use_nodes:
+            return self.classifier(batch.flow_x)
         h = batch.x
         for conv in self.convs:
             h = F.elu(conv(h, batch.edge_index, batch.edge_attr))

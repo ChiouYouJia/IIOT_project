@@ -1,0 +1,14 @@
+{
+  "method": "rf_ctx_w10_merged",
+  "task": "identification",
+  "seed": 0,
+  "split": "episode_block_v1",
+  "member": "C",
+  "n_params": 24480,
+  "train_time_s": 0.6574501991271973,
+  "infer_time_s": 0.06297898292541504,
+  "hardware": "cpu",
+  "graph_window": 10.0,
+  "node_key": "address_merged",
+  "notes": "ablation: RF (n_estimators=100) on [flow, src node agg, dst node agg] from build_window_graphs; no message passing"
+}

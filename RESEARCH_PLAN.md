@@ -127,6 +127,7 @@
 - [x] Binary detection + multi-class identification (見 `docs/GNN_RESULTS.md`)
 - [x] IP-Scan F1 改善分析（RF 基線 0.531 → GNN 0.953）
 - [x] 與基線 RF 的效能比較
+- [x] 消融：message passing vs 窗口上下文、RF + 上下文、攻擊者節點捷徑檢查 (見 `docs/GNN_RESULTS.md`)
 
 **交付物**: `src/models/gnn_detector.py`, `notebooks/04_gnn.ipynb`
 

@@ -1,0 +1,15 @@
+{
+  "method": "rf_cctx_w10_merged",
+  "task": "identification",
+  "seed": 1,
+  "split": "episode_block_v1",
+  "member": "C",
+  "n_params": 33042,
+  "train_time_s": 0.6625733375549316,
+  "infer_time_s": 0.04916834831237793,
+  "hardware": "cpu",
+  "graph_window": 10.0,
+  "node_key": "address_merged",
+  "context": "causal_node",
+  "notes": "ablation: RF (n_estimators=100), context=causal_node, flow features + aggregated context features; no message passing"
+}

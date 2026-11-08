@@ -1,0 +1,15 @@
+{
+  "method": "rf_gctx_w5",
+  "task": "identification",
+  "seed": 2,
+  "split": "episode_block_v1",
+  "member": "C",
+  "n_params": 30830,
+  "train_time_s": 0.3585197925567627,
+  "infer_time_s": 0.03780817985534668,
+  "hardware": "cpu",
+  "graph_window": 5.0,
+  "node_key": "address_merged",
+  "context": "global",
+  "notes": "ablation: RF (n_estimators=100), context=global, flow features + aggregated context features; no message passing"
+}

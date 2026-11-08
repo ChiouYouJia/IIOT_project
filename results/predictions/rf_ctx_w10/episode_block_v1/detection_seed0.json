@@ -1,0 +1,15 @@
+{
+  "method": "rf_ctx_w10",
+  "task": "detection",
+  "seed": 0,
+  "split": "episode_block_v1",
+  "member": "C",
+  "detection_from": "separate",
+  "n_params": 19148,
+  "train_time_s": 0.7465372085571289,
+  "infer_time_s": 0.0771646499633789,
+  "hardware": "cpu",
+  "graph_window": 10.0,
+  "node_key": "address",
+  "notes": "ablation: RF (n_estimators=100) on [flow, src node agg, dst node agg] from build_window_graphs; no message passing"
+}
