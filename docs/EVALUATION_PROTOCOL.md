@@ -148,7 +148,7 @@ src.data.loader.load_split()  →  訓練 (只用 train，調參只看 val)
 
 | 成員 | 代表變體 (detection) | 代表變體 (identification) |
 |------|------|------|
-| A — LSTM |lstm_attn_global_w20 |lstm_attn_global_w20 |
+| A — LSTM | `lstm_attn_global_w10_bs64_ep80` | `lstm_attn_global_w10_bs64_ep80` |
 | B — FL | | |
 | C — GNN | `gnn_gat_w5` | `gnn_gat_w10_merged` |
 

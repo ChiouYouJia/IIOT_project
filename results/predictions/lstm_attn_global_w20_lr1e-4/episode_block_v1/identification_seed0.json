@@ -1,0 +1,14 @@
+{
+  "method": "lstm_attn_global_w20_lr1e-4",
+  "task": "identification",
+  "seed": 0,
+  "split": "episode_block_v1",
+  "member": "A",
+  "n_params": 110598,
+  "train_time_s": 650.6296284198761,
+  "infer_time_s": 1.0982611179351807,
+  "hardware": "cpu",
+  "notes": "hidden=128, lr=0.0001, epochs=40, patience=8, best_epoch=39, best_val_score=0.731575",
+  "sequence": "global",
+  "window": 20
+}

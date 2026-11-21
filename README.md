@@ -35,6 +35,7 @@
 - 將流量資料轉為時間序列，利用 LSTM 捕捉攻擊前後的行為變化
 - 加入 Attention 機制聚焦關鍵時間步
 - 論文明確指出「analyzing the predecessor and successor is a promising technique」
+- 目前代表變體：`lstm_attn_global_w10_bs64` (detection F1 0.982，超越 RF) / `lstm_attn_global_w10` (identification macro-F1 0.894)，詳見 [docs/LSTM_RESULTS.md](docs/LSTM_RESULTS.md)
 
 ### 方法二：Federated Learning 聯邦式學習（成員 B）
 - 模擬多個 ICS 場域各自訓練本地模型，透過聯邦學習聚合全域模型
@@ -45,7 +46,7 @@
 ### 方法三：Graph Neural Network（成員 C）
 - 將網路流量建模為圖結構 (節點=ICS 元件 `sAddress`/`rAddress`, 邊=通訊流量)
 - 使用 GAT 捕捉 ICS 元件間的通訊模式異常
-- 目前結果：identification macro-F1 0.950 (RF 0.880)、ip-scan F1 0.953 (RF 0.531)，詳見 [docs/GNN_RESULTS.md](docs/GNN_RESULTS.md)
+- 目前結果：detection F1 0.986 (超越 RF 0.980)、identification macro-F1 0.897 (RF 0.879)，詳見 [docs/LSTM_RESULTS.md](docs/LSTM_RESULTS.md)
 
 ## 專案結構
 
@@ -57,22 +58,24 @@ IIOT_project/
 │   └── environment.yml          # Conda 環境設定
 ├── docs/
 │   ├── EVALUATION_PROTOCOL.md   # 評估規範 (全員必讀)
-│   └── GNN_RESULTS.md           # 成員 C 的 GNN 實驗紀錄
+│   ├── GNN_RESULTS.md           # 成員 C 的 GNN 實驗紀錄
+│   └── LSTM_RESULTS.md          # 成員 A 的 LSTM 實驗紀錄
 ├── data/
 │   ├── raw/                     # 原始資料 (從 Kaggle 下載)
 │   ├── splits/                  # 共用切分檔 (已 commit，不可自行重切)
 │   └── processed/               # 前處理後的資料
-├── notebooks/                   # (待建立) 01_eda / 02_baseline / 03_lstm / 04_gnn / 05_federated
+├── notebooks/                   # 分析 notebook：03_lstm / 04_gnn
 ├── src/
 │   ├── data/
 │   │   └── loader.py            # 資料載入 + 共用切分 (load_split, sort_by_time)
-│   ├── models/                  # gnn_detector.py；(待建立) baseline / lstm_attention / federated
+│   ├── models/                  # lstm_attention.py / gnn_detector.py
 │   └── utils/
 │       └── metrics.py           # 評估指標 + save_predictions
 ├── scripts/
 │   ├── make_splits.py           # 產生共用切分 (已執行，勿重跑覆蓋)
 │   ├── baseline_rf.py           # RF 基線 + 預測檔範本
 │   ├── baseline_dt_ann.py       # DT / ANN 基線 (論文 Table 11 超參數)
+│   ├── lstm_attn_global_w20.py  # LSTM + Attention 正式訓練與預測
 │   ├── train_gnn.py             # GNN (EdgeGAT) 訓練 + 輸出預測
 │   └── evaluate.py              # 統一評估、產生排行榜
 ├── configs/
@@ -116,6 +119,10 @@ kaggle datasets download -d alirezadehlaghi/icssim -p data/raw --unzip
 python scripts/baseline_rf.py
 # 論文的 DT / ANN 基線 (超參數依論文 Table 11)，輸出到 results/predictions/{dt,ann}_baseline/
 python scripts/baseline_dt_ann.py
+
+# LSTM + Attention
+python scripts/lstm_attn_global_w20.py --task identification
+python scripts/lstm_attn_global_w20.py --task detection
 
 # 讀取所有人的預測檔，產生 results/leaderboard_episode_block_v1.md
 python scripts/evaluate.py

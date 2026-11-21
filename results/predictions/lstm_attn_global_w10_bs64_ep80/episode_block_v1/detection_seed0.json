@@ -1,0 +1,15 @@
+{
+  "method": "lstm_attn_global_w10_bs64_ep80",
+  "task": "detection",
+  "seed": 0,
+  "split": "episode_block_v1",
+  "member": "A",
+  "detection_from": "separate",
+  "n_params": 110082,
+  "train_time_s": 694.3252980709076,
+  "infer_time_s": 0.5526854991912842,
+  "hardware": "cpu",
+  "notes": "hidden=128, lr=0.001, epochs=80, patience=15, best_epoch=53, best_val_score=0.989963, dropout=0.2, lstm_dropout=0.0, grad_clip=0.0, weight_decay=0.0, focal_gamma=0.0",
+  "sequence": "global",
+  "window": 10
+}

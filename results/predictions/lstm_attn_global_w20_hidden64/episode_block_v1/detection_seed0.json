@@ -1,0 +1,15 @@
+{
+  "method": "lstm_attn_global_w20_hidden64",
+  "task": "detection",
+  "seed": 0,
+  "split": "episode_block_v1",
+  "member": "A",
+  "detection_from": "separate",
+  "n_params": 34562,
+  "train_time_s": 104.53049087524414,
+  "infer_time_s": 0.23845648765563965,
+  "hardware": "cpu",
+  "notes": "hidden=64, lr=0.001, epochs=40, patience=8, best_epoch=20, best_val_score=0.984951",
+  "sequence": "global",
+  "window": 20
+}
